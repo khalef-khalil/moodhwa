@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { ArrowLeft, ArrowRight, EyeOff } from 'lucide-react'
 import { Bangers } from 'next/font/google'
+import Image from 'next/image'
 
 const bangers = Bangers({
   weight: '400',
@@ -77,12 +78,14 @@ export default function ManhwaCard({
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.3 }}
-            className="h-full"
+            className="h-full aspect-[3/4] relative"
           >
-            <img
+            <Image
               src={manhwa.image_url || "/placeholder.svg"}
               alt={manhwa.title}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, 400px"
             />
           </motion.div>
         </div>

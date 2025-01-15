@@ -1,17 +1,9 @@
 import { Bangers } from 'next/font/google'
-import { Teko } from 'next/font/google'
-import Image from 'next/image'
-import Link from 'next/link'
 import MoodButton from './components/MoodButton'
 import AnimatedContainer, { AnimatedItem } from './components/AnimatedContainer'
 import Footer from '@/app/components/Footer'
 
 const bangers = Bangers({
-  weight: '400',
-  subsets: ['latin'],
-})
-
-const teko = Teko({
   weight: '400',
   subsets: ['latin'],
 })
