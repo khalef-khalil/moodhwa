@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ManhwaCard from '@/app/components/ManhwaCard'
-import LoadingSpinner from '@/app/components/LoadingSpinner'
 
 interface Manhwa {
   _id: { $oid: string }
@@ -35,19 +34,6 @@ export default function ManhwaClientPage({ initialManhwas }: ManhwaClientPagePro
   const [hiddenIndices, setHiddenIndices] = useState<number[]>([])
   const [viewHistory, setViewHistory] = useState<number[]>([])
   const [direction, setDirection] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    // Hide loading spinner after a short delay
-    const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 500)
-    return () => clearTimeout(timer)
-  }, [])
-
-  if (isLoading) {
-    return <LoadingSpinner />
-  }
 
   const availableManhwas = initialManhwas.filter((_, index) => !hiddenIndices.includes(index))
   

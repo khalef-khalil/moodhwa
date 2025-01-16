@@ -1,7 +1,10 @@
+'use client'
+
 import { Bangers } from 'next/font/google'
 import MoodButton from './components/MoodButton'
 import AnimatedContainer, { AnimatedItem } from './components/AnimatedContainer'
 import Footer from '@/app/components/Footer'
+import { useEffect } from 'react'
 
 const bangers = Bangers({
   weight: '400',
@@ -31,6 +34,17 @@ const moods = [
 ]
 
 export default function Home() {
+  useEffect(() => {
+    // Check if this is the first visit
+    const hasVisited = localStorage.getItem('hasVisited')
+    if (!hasVisited) {
+      // Set the flag before reloading to prevent infinite loop
+      localStorage.setItem('hasVisited', 'true')
+      // Reload the page
+      window.location.reload()
+    }
+  }, [])
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-fuchsia-100 via-violet-200 to-cyan-200 p-4 sm:p-6 md:p-12 flex flex-col">
       <div className="max-w-7xl mx-auto space-y-6 sm:space-y-8 flex-grow">
