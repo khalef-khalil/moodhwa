@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,6 +47,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <Script
+          defer
+          data-website-id="67888d400a5b3b09cf077dc6"
+          data-domain="www.moodhwa.com"
+          src="https://datafa.st/js/script.js"
+          strategy="afterInteractive"
+        />
+      </head>
       <body className={inter.className}>{children}</body>
     </html>
   );
