@@ -182,8 +182,9 @@ export default function ManhwaListPage({ params }: PageProps) {
           canGoNext={currentIndex < availableManhwas.length - 1}
           direction={direction}
         />
+        <Footer />
       </div>
-      <Footer />
+      
     </div>
   )
 }
