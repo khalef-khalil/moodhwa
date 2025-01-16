@@ -1,14 +1,10 @@
-'use client'
-
 import { Bangers } from 'next/font/google'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import ManhwaCard from '@/app/components/ManhwaCard'
 import Footer from '@/app/components/Footer'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
-import LoadingSpinner from '@/app/components/LoadingSpinner'
+import clientPromise from '@/lib/mongodb'
+import ManhwaClientPage from './client'
 
 const bangers = Bangers({
   weight: '400',
@@ -41,150 +37,67 @@ interface Manhwa {
   moods: string[]
 }
 
-export default function ManhwaListPage({ params }: PageProps) {
-  const router = useRouter()
-  const [manhwas, setManhwas] = useState<Manhwa[]>([])
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [hiddenIndices, setHiddenIndices] = useState<number[]>([])
-  const [viewHistory, setViewHistory] = useState<number[]>([])
-  const [direction, setDirection] = useState(0)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    async function fetchManhwas() {
-      try {
-        const response = await fetch(`/api/manhwas?mood=${encodeURIComponent(params.mood)}`)
-        if (!response.ok) {
-          if (response.status === 404) {
-            notFound()
-          }
-          throw new Error('Failed to fetch manhwas')
-        }
-        const data = await response.json()
-        setManhwas(data)
-      } catch (error) {
-        setError(error instanceof Error ? error.message : 'Failed to load manhwas')
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchManhwas()
-  }, [params.mood])
-
-  if (isLoading) {
-    return <LoadingSpinner />
-  }
-
-  if (error) {
-    return <div>Error: {error}</div>
-  }
-
-  const availableManhwas = manhwas.filter((_, index) => !hiddenIndices.includes(index))
-  
-  if (availableManhwas.length === 0 || currentIndex >= availableManhwas.length) {
-    router.push('/')
-    return null
-  }
-
-  const getOriginalIndex = (currentVisibleIndex: number) => {
-    let count = 0
-    let originalIndex = 0
+export default async function ManhwaPage({ params }: PageProps) {
+  try {
+    const client = await clientPromise
+    const db = client.db(process.env.MONGODB_DB)
     
-    while (count < currentVisibleIndex) {
-      if (!hiddenIndices.includes(originalIndex)) {
-        count++
-      }
-      originalIndex++
+    if (!db) {
+      throw new Error('Database connection failed')
     }
     
-    while (hiddenIndices.includes(originalIndex)) {
-      originalIndex++
+    const manhwas = await db.collection<Manhwa>('Manhwas')
+      .find({ 
+        moods: { 
+          $regex: new RegExp(params.mood, 'i')
+        } 
+      })
+      .toArray()
+
+    if (manhwas.length === 0) {
+      notFound()
     }
-    
-    return originalIndex
-  }
 
-  const currentManhwa = availableManhwas[currentIndex]
+    // Sort manhwas by rating (highest to lowest)
+    const sortedManhwas = manhwas.sort((a, b) => b.rating - a.rating)
 
-  const serializedManhwa = {
-    id: currentManhwa._id.$oid,
-    image_url: currentManhwa.image_url,
-    title: currentManhwa.title,
-    release_year: currentManhwa.release_year,
-    chapters: currentManhwa.chapters,
-    status: currentManhwa.status,
-    rating: currentManhwa.rating,
-    genres: currentManhwa.genres,
-    description: currentManhwa.description_translations.en
-  }
-
-  const handleNext = () => {
-    if (currentIndex < availableManhwas.length - 1) {
-      setViewHistory([...viewHistory, currentIndex])
-      setCurrentIndex(currentIndex + 1)
-      setDirection(1)
-    }
-  }
-
-  const handleHide = () => {
-    const originalIndex = getOriginalIndex(currentIndex)
-    setHiddenIndices([...hiddenIndices, originalIndex])
-    
-    if (currentIndex >= availableManhwas.length - 1) {
-      setCurrentIndex(0)
-    }
-    setDirection(1)
-  }
-
-  const handlePrevious = () => {
-    if (viewHistory.length > 0) {
-      const prevIndex = viewHistory[viewHistory.length - 1]
-      setViewHistory(viewHistory.slice(0, -1))
-      setCurrentIndex(prevIndex)
-      setDirection(-1)
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-fuchsia-100 via-violet-200 to-cyan-200 min-w-full">
-      <div className="max-w-6xl mx-auto px-4 py-4 min-h-screen">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span className="text-purple-600">•</span>
-            <span className="text-purple-600">
-              Sorted by highest rating
-            </span>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-fuchsia-100 via-violet-200 to-cyan-200 min-w-full">
+        <div className="max-w-6xl mx-auto px-4 py-4 min-h-screen">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <span className="text-purple-600">•</span>
+              <span className="text-purple-600">
+                Sorted by highest rating
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className={`text-base ${bangers.className}`}>
+                Feeling 😊 {decodeURIComponent(params.mood)}
+              </span>
+              <Link href="/">
+                <Button 
+                  className={`${bangers.className} bg-purple-600 hover:bg-purple-700 text-white`}
+                >
+                  EDIT MOOD
+                </Button>
+              </Link>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
-            <span className={`text-base ${bangers.className}`}>
-              Feeling 😊 {decodeURIComponent(params.mood)}
-            </span>
-            <Link href="/">
-              <Button 
-                className={`${bangers.className} bg-purple-600 hover:bg-purple-700 text-white`}
-              >
-                EDIT MOOD
-              </Button>
-            </Link>
-          </div>
+
+          {/* Main Content */}
+          <ManhwaClientPage initialManhwas={sortedManhwas} />
+          <Footer />
         </div>
-
-        {/* Main Content */}
-        <ManhwaCard
-          manhwa={serializedManhwa}
-          onPrevious={handlePrevious}
-          onNext={handleNext}
-          onHide={handleHide}
-          canGoBack={viewHistory.length > 0}
-          canGoNext={currentIndex < availableManhwas.length - 1}
-          direction={direction}
-        />
-        <Footer />
       </div>
-      
-    </div>
-  )
+    )
+  } catch (error) {
+    console.error('Error in ManhwaPage:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    if (errorMessage.includes('bad auth') || errorMessage.includes('authentication failed')) {
+      throw new Error('Database authentication failed. Please check your credentials.')
+    }
+    throw new Error(`Failed to load manhwas: ${errorMessage}`)
+  }
 }
