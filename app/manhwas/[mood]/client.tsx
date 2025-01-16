@@ -37,13 +37,13 @@ export default function ManhwaClientPage({ initialManhwas }: ManhwaClientPagePro
   const [direction, setDirection] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
 
-  // Simulate loading for smoother transition
   useEffect(() => {
+    // Hide loading spinner after a short delay
     const timer = setTimeout(() => {
       setIsLoading(false)
-    }, 1000)
+    }, 500)
     return () => clearTimeout(timer)
-  }, []) // Empty dependency array for one-time execution
+  }, [])
 
   if (isLoading) {
     return <LoadingSpinner />
