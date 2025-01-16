@@ -102,8 +102,8 @@ export default function ManhwaPage({ params }: PageProps) {
 
         {/* Main Content */}
         <ManhwaClientPage initialManhwas={sortedManhwas} />
+        <Footer />
       </div>
-      <Footer />
     </div>
   )
 }
