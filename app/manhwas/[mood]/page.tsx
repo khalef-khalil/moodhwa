@@ -153,11 +153,7 @@ export default function ManhwaListPage({ params }: PageProps) {
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 text-sm text-gray-600">
-            <span>
-              Showing {currentIndex + 1} of {availableManhwas.length}
-              {viewHistory.length > 0 && ` (${viewHistory.length} in history)`}
-            </span>
-            <span>•</span>
+            <span className="text-purple-600">•</span>
             <span className="text-purple-600">
               Sorted by highest rating
             </span>
